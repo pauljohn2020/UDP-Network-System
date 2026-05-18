@@ -1,38 +1,64 @@
-# UDP Position Sync System
+========================================
+UDP POSITION SYNC SYSTEM - WINDOWS BUILD
+========================================
 
-A real-time multiplayer position synchronization system built in Unity using UDP sockets.
+A lightweight UDP networking system for real-time position sync.
 
-## What This Project Shows
+========================================
+HOW TO TEST MULTIPLAYER (1 PC)
+========================================
 
-- UDP socket programming in C#
-- Multi-threaded network listening (game doesn't freeze)
-- Client-server architecture
-- Team-based message filtering (like Valorant pings)
-- Thread-safe Unity integration
+1. Run UDP_Project.exe TWICE (two separate windows)
 
-## The Scripts
+2. FIRST window (SERVER):
+   - Check "Run as Server" in the top-left corner
+   - Select "Blue" or "Red" for the team
 
-- **NetworkManager.cs** - Handles UDP server/client logic, threading, and message routing
-- **PlayerController.cs** - Manages player movement and input
-- **UnityMainThreadDispatcher.cs** - Safely executes background thread actions on Unity's main thread
+3. SECOND window (CLIENT):
+   - UNcheck "Run as Server"
+   - Select the opposite team as compared to the first window
 
-## How It Works
+4. Click Play in both windows
 
-The server listens for UDP packets on a separate thread. Clients send their position every 100ms. The server tracks which team each client belongs to and only broadcasts "enemy spotted" messages to teammates.
+5. Move with WASD keys
 
-## How to Test
+6. Press SPACE to send "Enemy Spotted" ping
 
-1. Create a new Unity project
-2. Create an `Assets/Scripts/` folder
-3. Add these three scripts to that folder
-4. Create an empty GameObject → add NetworkManager (isServer = true)
-5. Create a Cube → add PlayerController
-6. Press Play in the Editor (Server)
-7. Build a second version or use ParrelSync to create a Client
-8. Move with WASD, press SPACE for enemy ping
+========================================
+WHAT YOU SHOULD SEE
+========================================
 
-## Performance Notes
+- Console shows position updates
+- Server window shows: "Player joined Blue/Red team"
+- Pressing SPACE shows: "Enemy spotted by team X"
 
-- UDP packets sent every 100ms
-- Server processing latency under 10ms
-- Network listening runs on background thread — main thread stays smooth
+========================================
+TROUBLESHOOTING
+========================================
+
+- Client won't connect? Ensure Server window is running FIRST
+- "Port already in use"? Close Skype/Discord or change port in code
+- Firewall prompt? Click "Allow access"
+
+========================================
+TECH DETAILS (For Your Review)
+========================================
+
+- UDP protocol (fast, no confirmation)
+- Server tracks teams (Blue/Red auto-assigned)
+- Multi-threaded listening (game doesn't freeze)
+- Thread-safe dispatcher for Unity main thread
+
+========================================
+SOURCE CODE
+========================================
+
+Full source code available on GitHub:
+https://github.com/pauljohn2020/UDP-Network-System
+
+========================================
+CONTACT
+========================================
+
+Paul John Shaji
+pauljohn.shaji@yahoo.com

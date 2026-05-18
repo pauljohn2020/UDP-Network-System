@@ -48,8 +48,8 @@ public class PlayerController : MonoBehaviour
         {
             networkManager.SendSpotted(transform.position.x, transform.position.y, transform.position.z);
             
-            // Visual feedback: briefly flash the cube red
-            GetComponent<Renderer>().material.color = Color.red;
+            // Visual feedback: brief GREEN flash (you send a ping, not you were hit)
+            GetComponent<Renderer>().material.color = Color.green;
             Invoke(nameof(ResetColor), 0.2f);
         }
         

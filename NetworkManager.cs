@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using TMPro;
 
 // This script handles ALL networking - both server and client mode
 // Attach this to "NetworkManager" (Empty Gameobject)
@@ -17,6 +19,9 @@ public class NetworkManager : MonoBehaviour
     [Header("Team Settings (for clients only)")]
     public string myTeam = "Blue"; // "Blue" or "Red" - only matters if this is a client
 
+    // ============ UI REFERENCES ============
+    public TextMeshProUGUI statusText;
+    public TMP_Dropdown teamDropdown;
     // ============ NETWORKING VARIABLES ============
     private UdpClient udpClient; // UDP radio device
     private Thread receiveThread; // Seperate worker that listens for messages (so game doesn't freeze)
@@ -45,6 +50,37 @@ public class NetworkManager : MonoBehaviour
             // Client (walkie-talkie) - Connect to the Server (Radio Tower)
             StartClient();
         }
+    }
+
+    // ============ HELPER METHODS ============
+    // Helper to show status messages on screen
+    private void ShowStatusMessage(string message, float duration = 3f)
+    {
+        if (statusText != null)
+        {
+            statusText.text = message;
+            Invoke(nameof(ClearStatusMessage), duration);
+        }
+        Debug.Log(message);
+    }
+
+    // Helper to clear status message
+    private void ClearStatusMessage()
+    {
+        if (statusText != null && statusText.text != "")
+        {
+            statusText.text = "";
+        }
+    }
+
+    // Get the team selected in the UI dropdown
+    private string GetSelectedTeam()
+    {
+        if (teamDropdown != null)
+        {
+            return teamDropdown.options[teamDropdown.value].text;
+        }
+        return myTeam;
     }
 
     // ============ SERVER FUNCTIONS ============
@@ -204,6 +240,13 @@ public class NetworkManager : MonoBehaviour
                 }
                 myAssignedTeam = parts[1];
                 isConnected = true;
+
+                // Disable team dropdown after joining
+                if (teamDropdown != null)
+                    teamDropdown.interactable = false;
+
+                //Show status message on screen
+                ShowStatusMessage($"Connected as {myAssignedTeam} team!", 3f);
                 Debug.Log($"Joined team: {myAssignedTeam}");
                 break;
             
@@ -213,6 +256,7 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log($"Malformed SYSTEM message: {message}");
                     return;
                 }
+                ShowStatusMessage($"{parts[1]}", 2f);
                 Debug.Log($"{parts[1]}");
                 break;
             
@@ -222,7 +266,13 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log($"Malformed POS message: {message}");
                     return;
                 }
-                Debug.Log($"Teammate at ({parts[2]}, {parts[3]}, {parts[4]}");
+                //Show teammate position on screen
+                string team = parts[1];
+                string posX = parts[2];
+                string posY = parts[3];
+                string posZ = parts[4];
+                ShowStatusMessage($"Teammate ({team}) at ({posX}, {posY}, {posZ})", 1.5f);
+                Debug.Log($"Teammate ({team}) at ({posX}, {posY}, {posZ})");
                 break;
             
             case "SPOTTED":
@@ -231,6 +281,8 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log($"Malformed SPOTTED message: {message}");
                     return;
                 }
+                // Show enemy spotted message on screen
+                ShowStatusMessage($"Enemy Spotted at ({parts[1]}, {parts[2]}, {parts[3]})!", 2f);
                 Debug.Log($"ENEMY SPOTTED at ({parts[1]}, {parts[2]}, {parts[3]})");
                 break;
             
@@ -357,8 +409,10 @@ public class NetworkManager : MonoBehaviour
             receiveThread = new Thread(ReceiveMessagesClient);
             receiveThread.Start();
 
-            // Tell the server we want to join
-            SendMessage($"JOIN|{myTeam}");
+            // Tell the server we want to join using dropdown selection
+            string selectedTeam = GetSelectedTeam();
+            SendMessage($"JOIN|{selectedTeam}");
+            Debug.Log($"Requesting to join {selectedTeam} team");
         }
         catch (System.Exception e)
         {
@@ -381,6 +435,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (!isConnected) return;
         SendMessage($"SPOTTED|{x:F2}|{y:F2}|{z:F2}");
+        ShowStatusMessage($"You spotted an enemy at ({x:F2}, {y:F2}, {z:F2})!", 2f);
         Debug.Log($"You spotted an enemy at ({x:F2},{y:F2},{z:F2})!");
     }
 
